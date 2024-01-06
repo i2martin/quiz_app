@@ -25,7 +25,6 @@ class StartScreen extends StatelessWidget {
               textAlign: TextAlign.center,
               style: TextStyle(
                 height: 1.5,
-                color: Colors.white,
                 fontSize: 18,
               ),
             ),
@@ -43,7 +42,7 @@ class StartScreen extends StatelessWidget {
                 foregroundColor: Colors.white,
               ),
               label: const Text('Započni kviz!'),
-            )
+            ),
           ],
         ),
       ),

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:quiz_app/data/questions.dart';
 import 'package:quiz_app/questions_screen.dart';
+import 'package:quiz_app/results_screen.dart';
 import 'start_screen.dart';
 
 class Quiz extends StatefulWidget {
@@ -12,22 +15,45 @@ class Quiz extends StatefulWidget {
 
 class _QuizState extends State<Quiz> {
   Widget? activeScreen;
-
+  List<String> selectedAnswers = [];
   @override
   void initState() {
     activeScreen = StartScreen(switchScreen);
     super.initState();
   }
 
+  void chooseAnswer(String answer) {
+    selectedAnswers.add(answer);
+    if (selectedAnswers.length == questions.length) {
+      setState(() {
+        activeScreen = ResultsScreen(
+          chosenAnswers: selectedAnswers,
+          restartQuiz: restartQuiz,
+        );
+        selectedAnswers = [];
+      });
+    }
+  }
+
+  void restartQuiz() {
+    setState(() {
+      activeScreen = StartScreen(switchScreen);
+    });
+  }
+
   void switchScreen() {
     setState(() {
-      activeScreen = const QuestionsScreen();
+      activeScreen = QuestionsScreen(onSelectAnswer: chooseAnswer);
     });
   }
 
   @override
   Widget build(context) {
     return MaterialApp(
+      theme: ThemeData(
+        fontFamily: GoogleFonts.montserrat().fontFamily,
+        textTheme: Typography.whiteCupertino,
+      ),
       home: Scaffold(
         body: Container(
             decoration: const BoxDecoration(
