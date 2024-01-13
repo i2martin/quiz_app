@@ -1,6 +1,6 @@
 import 'package:quiz_app/models/quiz_question.dart';
 
-const questions = [
+var questions = [
   QuizQuestion(
     'Koji je rezultat zbroja 7 + 3?',
     [
