@@ -6,7 +6,13 @@ import 'package:quiz_app/results_screen.dart';
 import 'start_screen.dart';
 
 class Quiz extends StatefulWidget {
-  const Quiz({super.key});
+  List<Map<String, dynamic>> questions = List.empty();
+  int numberOfQuestions = 10; // Set the desired number of questions
+  String category = 'Matematika'; // Set the desired category
+  String subcategory = 'Algebra'; // Set the desired subcategory
+
+  Quiz({super.key});
+
   @override
   State<Quiz> createState() {
     return _QuizState();
@@ -16,6 +22,7 @@ class Quiz extends StatefulWidget {
 class _QuizState extends State<Quiz> {
   Widget? activeScreen;
   List<String> selectedAnswers = [];
+
   @override
   void initState() {
     activeScreen = StartScreen(switchScreen);
@@ -51,6 +58,7 @@ class _QuizState extends State<Quiz> {
   Widget build(context) {
     return MaterialApp(
       theme: ThemeData(
+        unselectedWidgetColor: Colors.white,
         fontFamily: GoogleFonts.montserrat().fontFamily,
         textTheme: Typography.whiteCupertino,
       ),

@@ -1,9 +1,33 @@
 import 'package:flutter/material.dart';
 
-class StartScreen extends StatelessWidget {
-  const StartScreen(this.startQuiz, {super.key});
+class StartScreen extends StatefulWidget {
+  StartScreen(this.startQuiz, {super.key});
 
+  @override
+  State<StartScreen> createState() => _StartScreenState();
   final void Function() startQuiz;
+
+  List<String> categories = [
+    "Matematika",
+    "Hrvatski jezik",
+    "Engleski jezik",
+    "Matematika",
+    "Hrvatski jezik",
+    "Engleski jezik",
+    "Matematika",
+    "Hrvatski jezik",
+    "Engleski jezik",
+    "Matematika",
+    "Hrvatski jezik",
+    "Engleski jezik"
+  ];
+  bool isTrueFalseTypeChecked = false;
+  bool isDropdownTypeChecked = false;
+  bool isShortAnswerTypeChecked = false;
+  bool isProblemSolvingTypeChecked = false;
+}
+
+class _StartScreenState extends State<StartScreen> {
   @override
   Widget build(context) {
     return Center(
@@ -31,12 +55,54 @@ class StartScreen extends StatelessWidget {
             const SizedBox(
               height: 50,
             ),
+            SingleChildScrollView(
+              child: DropdownMenu<String>(
+                dropdownMenuEntries: widget.categories
+                    .map((item) =>
+                        DropdownMenuEntry<String>(value: item, label: item))
+                    .toList(),
+                enableSearch: true,
+                initialSelection: widget.categories[0],
+              ),
+            ),
+            CheckboxListTile(
+                title: const Text("Zadaci višestrukog odabira"),
+                value: widget.isDropdownTypeChecked,
+                onChanged: (bool? value) {
+                  setState(() {
+                    widget.isDropdownTypeChecked = value!;
+                  });
+                }),
+            CheckboxListTile(
+                title: const Text("Točno/Netočno zadaci"),
+                value: widget.isTrueFalseTypeChecked,
+                onChanged: (bool? value) {
+                  setState(() {
+                    widget.isTrueFalseTypeChecked = value!;
+                  });
+                }),
+            CheckboxListTile(
+                title: const Text("Zadaci kratkog odgovora"),
+                value: widget.isShortAnswerTypeChecked,
+                onChanged: (bool? value) {
+                  setState(() {
+                    widget.isShortAnswerTypeChecked = value!;
+                  });
+                }),
+            CheckboxListTile(
+                title: const Text("Problemski zadaci"),
+                value: widget.isProblemSolvingTypeChecked,
+                onChanged: (bool? value) {
+                  setState(() {
+                    widget.isProblemSolvingTypeChecked = value!;
+                  });
+                }),
             OutlinedButton.icon(
               icon: const Icon(
                 Icons.arrow_right_alt,
               ),
               onPressed: () {
-                startQuiz();
+                widget.startQuiz();
               },
               style: OutlinedButton.styleFrom(
                 foregroundColor: Colors.white,

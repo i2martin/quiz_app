@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quiz_app/data/database_service.dart';
 import 'answer_button.dart';
 import 'package:quiz_app/data/questions.dart';
 import 'dart:async';
@@ -16,11 +17,11 @@ class QuestionsScreen extends StatefulWidget {
 }
 
 class _QuestionsScreenState extends State<QuestionsScreen> {
+  List<Question>? newQuestions;
   var currentQuestionIndex = 0;
   late Timer _timer;
   late double percentage = 1.0;
   late int questionDuration = 10;
-  int index = -1;
   void answerQuestion(String selectedAnswer) {
     widget.onSelectAnswer(selectedAnswer);
     setState(() {
@@ -35,11 +36,17 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
     super.initState();
   }
 
+  void showQuestions() async {
+    // Retrieve all questions
+    newQuestions = await DatabaseHelper.getQuestionsByCategoryAndSubcategory(
+        "Matematika", "Algebra");
+  }
+
   void startTimer() {
     const oneSecond = Duration(seconds: 1);
     _timer = Timer.periodic(oneSecond, (timer) {
       setState(() {
-        percentage = timer.tick / questionDuration;
+        percentage = 1.0 - timer.tick / questionDuration;
         if (timer.tick >= questionDuration) {
           timer.cancel();
           answerQuestion("Vrijeme je isteklo.");
@@ -51,7 +58,7 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
   void resetTimer() {
     _timer.cancel();
     setState(() {
-      percentage = 0.0;
+      percentage = 1.0;
     });
     startTimer();
   }
@@ -103,7 +110,6 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
             ...currentQuestion
                 .shuffleQuestionAnswers(currentQuestionIndex)
                 .map((item) {
-              index = currentQuestionIndex;
               return AnswerButton(
                 answerText: item,
                 onTap: () {
