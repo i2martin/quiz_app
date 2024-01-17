@@ -21,6 +21,31 @@ class DatabaseHelper {
     return await db.query('Questions');
   }
 
+  static Future<List<Category>> getAllCategories() async {
+    final Database db = await database;
+    List<Map<String, dynamic>> queryResults = await db.query('Categories');
+    return queryResults.map((map) => Category.fromMap(map)).toList();
+  }
+
+  static Future<List<Subcategory>> getAllSubcategories(String category) async {
+    final Database db = await database;
+    //find ID of selected category
+    List<Map<String, dynamic>> queryResults = await db.query(
+      'Categories',
+      where: 'category=?',
+      whereArgs: [category],
+    );
+    int categoryId = queryResults.first['categoryId'];
+    print(categoryId);
+    //find all subcategories that belong to same category
+    queryResults = await db.query(
+      'Subcategories',
+      where: 'categoryId = ?',
+      whereArgs: [categoryId],
+    );
+    return queryResults.map((map) => Subcategory.fromMap(map)).toList();
+  }
+
   static Future<List<Question>> getQuestionsByCategoryAndSubcategory(
     String categoryName,
     String subcategoryName,
@@ -65,15 +90,15 @@ class DatabaseHelper {
   static Future<Database> initDatabase() async {
     // Get the path to the database on the device
     String databasesPath = await getDatabasesPath();
-    String path = join(databasesPath, 'questions.db');
+    String path = join(databasesPath, 'questions_database.db');
 
     // Check if the database exists
     bool exists = await databaseExists(path);
 
     if (!exists) {
       // If it doesn't exist, copy the database from the assets
-      ByteData data =
-          await rootBundle.load(join('assets', 'data', 'questions.db'));
+      ByteData data = await rootBundle
+          .load(join('assets', 'data', 'questions_database.db'));
       List<int> bytes = data.buffer.asUint8List();
       await File(path).writeAsBytes(bytes);
     }
@@ -115,6 +140,43 @@ class Question {
       questionType: map['questionType'],
       categoryId: map['categoryId'],
       subcategoryId: map['subcategoryId'],
+    );
+  }
+}
+
+class Category {
+  int categoryId;
+  String category;
+
+  Category({
+    required this.categoryId,
+    required this.category,
+  });
+
+  factory Category.fromMap(Map<String, dynamic> map) {
+    return Category(
+      categoryId: map['categoryId'],
+      category: map['category'],
+    );
+  }
+}
+
+class Subcategory {
+  int subcategoryId;
+  int categoryId;
+  String subcategory;
+
+  Subcategory({
+    required this.subcategoryId,
+    required this.categoryId,
+    required this.subcategory,
+  });
+
+  factory Subcategory.fromMap(Map<String, dynamic> map) {
+    return Subcategory(
+      subcategoryId: map['subcategoryId'],
+      categoryId: map['categoryId'],
+      subcategory: map['subcategory'],
     );
   }
 }

@@ -1,26 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:quiz_app/data/database_service.dart';
+import 'package:quiz_app/subcategory_menu.dart';
 
 class StartScreen extends StatefulWidget {
   StartScreen(this.startQuiz, {super.key});
-
+  List<Subcategory> subcategories = [];
+  List<Category> categories = [];
   @override
   State<StartScreen> createState() => _StartScreenState();
   final void Function() startQuiz;
-
-  List<String> categories = [
-    "Matematika",
-    "Hrvatski jezik",
-    "Engleski jezik",
-    "Matematika",
-    "Hrvatski jezik",
-    "Engleski jezik",
-    "Matematika",
-    "Hrvatski jezik",
-    "Engleski jezik",
-    "Matematika",
-    "Hrvatski jezik",
-    "Engleski jezik"
-  ];
   bool isTrueFalseTypeChecked = false;
   bool isDropdownTypeChecked = false;
   bool isShortAnswerTypeChecked = false;
@@ -28,6 +16,26 @@ class StartScreen extends StatefulWidget {
 }
 
 class _StartScreenState extends State<StartScreen> {
+  @override
+  void initState() {
+    getCategories();
+    super.initState();
+  }
+
+  void getSubcategories(String category) async {
+    widget.subcategories = await DatabaseHelper.getAllSubcategories(category);
+    setState(() {
+      widget.subcategories = widget.subcategories;
+    });
+  }
+
+  void getCategories() async {
+    widget.categories = await DatabaseHelper.getAllCategories();
+    setState(() {
+      widget.categories = widget.categories;
+    });
+  }
+
   @override
   Widget build(context) {
     return Center(
@@ -57,14 +65,22 @@ class _StartScreenState extends State<StartScreen> {
             ),
             SingleChildScrollView(
               child: DropdownMenu<String>(
+                menuHeight: 200,
                 dropdownMenuEntries: widget.categories
-                    .map((item) =>
-                        DropdownMenuEntry<String>(value: item, label: item))
+                    .map((item) => DropdownMenuEntry<String>(
+                        value: item.category, label: item.category))
                     .toList(),
                 enableSearch: true,
-                initialSelection: widget.categories[0],
+                enableFilter: true,
+                label: const Text("Kategorija"),
+                initialSelection: "",
+                width: 250,
+                onSelected: (String? category) {
+                  getSubcategories(category!);
+                },
               ),
             ),
+            SubcategoryMenu(subcategories: widget.subcategories),
             CheckboxListTile(
                 title: const Text("Zadaci višestrukog odabira"),
                 value: widget.isDropdownTypeChecked,
