@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:quiz_app/data/questions.dart';
+import 'package:quiz_app/data/database_service.dart';
 import 'package:quiz_app/questions_summary.dart';
 
 class ResultsScreen extends StatelessWidget {
   @override
-  const ResultsScreen(
-      {super.key, required this.chosenAnswers, required this.restartQuiz});
+  ResultsScreen(
+      {super.key,
+      required this.chosenAnswers,
+      required this.restartQuiz,
+      required this.questions});
 
   final List<String> chosenAnswers;
+  List<Question> questions;
   final void Function() restartQuiz;
   List<Map<String, Object>> getSummaryData() {
     final List<Map<String, Object>> summary = [];
@@ -16,7 +20,7 @@ class ResultsScreen extends StatelessWidget {
       summary.add({
         'question_index': i,
         'question': questions[i].questionText,
-        'correct_answer': questions[i].questionAnswers[0],
+        'correct_answer': questions[i].correctAnswer,
         'chosen_answer': chosenAnswers[i],
       });
     }

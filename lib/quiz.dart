@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:quiz_app/data/questions.dart';
+import 'package:quiz_app/data/database_service.dart';
 import 'package:quiz_app/questions_screen.dart';
 import 'package:quiz_app/results_screen.dart';
 import 'start_screen.dart';
@@ -22,6 +22,7 @@ class Quiz extends StatefulWidget {
 class _QuizState extends State<Quiz> {
   Widget? activeScreen;
   List<String> selectedAnswers = [];
+  List<Question> newQuestions = [];
 
   @override
   void initState() {
@@ -31,10 +32,11 @@ class _QuizState extends State<Quiz> {
 
   void chooseAnswer(String answer) {
     selectedAnswers.add(answer);
-    if (selectedAnswers.length == questions.length) {
+    if (selectedAnswers.length == newQuestions.length) {
       setState(() {
         activeScreen = ResultsScreen(
           chosenAnswers: selectedAnswers,
+          questions: newQuestions,
           restartQuiz: restartQuiz,
         );
         selectedAnswers = [];
@@ -48,9 +50,18 @@ class _QuizState extends State<Quiz> {
     });
   }
 
-  void switchScreen() {
+  void switchScreen(String category, String subcategory,
+      bool isShortAnswerTypeChecked) async {
+    newQuestions = await DatabaseHelper.getQuestionsByCategoryAndSubcategory(
+      category,
+      subcategory,
+      isShortAnswerTypeChecked,
+    );
+
     setState(() {
-      activeScreen = QuestionsScreen(onSelectAnswer: chooseAnswer);
+      newQuestions = newQuestions;
+      activeScreen = QuestionsScreen(
+          onSelectAnswer: chooseAnswer, questions: newQuestions);
     });
   }
 

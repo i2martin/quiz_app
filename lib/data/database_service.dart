@@ -1,6 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
-
 import 'package:flutter/services.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
@@ -36,7 +34,6 @@ class DatabaseHelper {
       whereArgs: [category],
     );
     int categoryId = queryResults.first['categoryId'];
-    print(categoryId);
     //find all subcategories that belong to same category
     queryResults = await db.query(
       'Subcategories',
@@ -49,6 +46,7 @@ class DatabaseHelper {
   static Future<List<Question>> getQuestionsByCategoryAndSubcategory(
     String categoryName,
     String subcategoryName,
+    bool isShortAnswerTypeChecked,
   ) async {
     final Database db = await database;
 
@@ -74,23 +72,35 @@ class DatabaseHelper {
     int subcategoryId = subcategoryResult.first['subcategoryId'];
 
     // Retrieve questions based on the fetched category and subcategory IDs
-    List<Map<String, dynamic>> queryResults = await db.query(
-      'Questions',
-      where: 'categoryId = ? AND subcategoryId = ?',
-      whereArgs: [categoryId, subcategoryId],
-    );
-
+    List<Map<String, dynamic>> queryResults;
+    if (isShortAnswerTypeChecked == true) {
+      queryResults = await db.query(
+        'Questions',
+        where: 'categoryId = ? AND subcategoryId = ?',
+        whereArgs: [categoryId, subcategoryId],
+      );
+    } else {
+      String questionType = "MC";
+      queryResults = await db.query(
+        'Questions',
+        where: 'categoryId = ? AND subcategoryId = ? AND questionType=?',
+        whereArgs: [categoryId, subcategoryId, questionType],
+      );
+    }
     // Map results to instances of the Question class
     List<Question> questions =
         queryResults.map((map) => Question.fromMap(map)).toList();
 
+    //shuffle questions and display random 15 questions
+    questions.shuffle();
+    questions.removeRange(15, questions.length);
     return questions;
   }
 
   static Future<Database> initDatabase() async {
     // Get the path to the database on the device
     String databasesPath = await getDatabasesPath();
-    String path = join(databasesPath, 'questions_database.db');
+    String path = join(databasesPath, 'questions_database_test.db');
 
     // Check if the database exists
     bool exists = await databaseExists(path);
@@ -98,7 +108,7 @@ class DatabaseHelper {
     if (!exists) {
       // If it doesn't exist, copy the database from the assets
       ByteData data = await rootBundle
-          .load(join('assets', 'data', 'questions_database.db'));
+          .load(join('assets', 'data', 'test', 'questions_database_test.db'));
       List<int> bytes = data.buffer.asUint8List();
       await File(path).writeAsBytes(bytes);
     }
@@ -118,6 +128,7 @@ class Question {
   String questionAnswers;
   String correctAnswer;
   String questionType;
+  int questionDuration;
   int categoryId;
   int subcategoryId;
 
@@ -127,6 +138,7 @@ class Question {
     required this.questionAnswers,
     required this.correctAnswer,
     required this.questionType,
+    required this.questionDuration,
     required this.categoryId,
     required this.subcategoryId,
   });
@@ -138,9 +150,30 @@ class Question {
       questionAnswers: map['questionAnswers'],
       correctAnswer: map['correctAnswer'],
       questionType: map['questionType'],
+      questionDuration: map['questionDuration'],
       categoryId: map['categoryId'],
       subcategoryId: map['subcategoryId'],
     );
+  }
+
+  List<String> _alreadyShuffledAnswers = List.empty();
+  int _cQuestionIndex = -1;
+
+  List<String> shuffleQuestionAnswers(int questionIndex) {
+    if (_cQuestionIndex != questionIndex) {
+      //question has changed --> needs to shuffle
+      final List<String> shuffledList = [];
+      List<String> answers = questionAnswers.split(',');
+      for (int i = 0; i < answers.length; i++) {
+        shuffledList.add(answers[i]);
+      }
+      shuffledList.shuffle();
+      _alreadyShuffledAnswers = shuffledList;
+      _cQuestionIndex = questionIndex;
+      return shuffledList;
+    } else {
+      return _alreadyShuffledAnswers;
+    }
   }
 }
 

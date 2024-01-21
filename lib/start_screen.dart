@@ -6,16 +6,16 @@ class StartScreen extends StatefulWidget {
   StartScreen(this.startQuiz, {super.key});
   List<Subcategory> subcategories = [];
   List<Category> categories = [];
+  bool isShortAnswerTypeChecked = false;
   @override
   State<StartScreen> createState() => _StartScreenState();
-  final void Function() startQuiz;
-  bool isTrueFalseTypeChecked = false;
-  bool isDropdownTypeChecked = false;
-  bool isShortAnswerTypeChecked = false;
-  bool isProblemSolvingTypeChecked = false;
+  final void Function(
+      String category, String subcategory, bool isShortAnswerChecked) startQuiz;
 }
 
 class _StartScreenState extends State<StartScreen> {
+  String selectedCategory = "";
+  String selectedSubcategory = "";
   @override
   void initState() {
     getCategories();
@@ -33,6 +33,18 @@ class _StartScreenState extends State<StartScreen> {
     widget.categories = await DatabaseHelper.getAllCategories();
     setState(() {
       widget.categories = widget.categories;
+    });
+  }
+
+  void updateSelectedCategory(String cat) {
+    setState(() {
+      selectedCategory = cat;
+    });
+  }
+
+  void updateSelectedSubcategory(String subcat) {
+    setState(() {
+      selectedSubcategory = subcat;
     });
   }
 
@@ -76,27 +88,15 @@ class _StartScreenState extends State<StartScreen> {
                 initialSelection: "",
                 width: 250,
                 onSelected: (String? category) {
-                  getSubcategories(category!);
+                  selectedCategory = category!;
+                  getSubcategories(category);
                 },
               ),
             ),
-            SubcategoryMenu(subcategories: widget.subcategories),
-            CheckboxListTile(
-                title: const Text("Zadaci višestrukog odabira"),
-                value: widget.isDropdownTypeChecked,
-                onChanged: (bool? value) {
-                  setState(() {
-                    widget.isDropdownTypeChecked = value!;
-                  });
-                }),
-            CheckboxListTile(
-                title: const Text("Točno/Netočno zadaci"),
-                value: widget.isTrueFalseTypeChecked,
-                onChanged: (bool? value) {
-                  setState(() {
-                    widget.isTrueFalseTypeChecked = value!;
-                  });
-                }),
+            SubcategoryMenu(
+              subcategories: widget.subcategories,
+              updateSubcategory: updateSelectedSubcategory,
+            ),
             CheckboxListTile(
                 title: const Text("Zadaci kratkog odgovora"),
                 value: widget.isShortAnswerTypeChecked,
@@ -105,20 +105,16 @@ class _StartScreenState extends State<StartScreen> {
                     widget.isShortAnswerTypeChecked = value!;
                   });
                 }),
-            CheckboxListTile(
-                title: const Text("Problemski zadaci"),
-                value: widget.isProblemSolvingTypeChecked,
-                onChanged: (bool? value) {
-                  setState(() {
-                    widget.isProblemSolvingTypeChecked = value!;
-                  });
-                }),
             OutlinedButton.icon(
               icon: const Icon(
                 Icons.arrow_right_alt,
               ),
               onPressed: () {
-                widget.startQuiz();
+                if (selectedCategory.isNotEmpty &&
+                    selectedSubcategory.isNotEmpty) {
+                  widget.startQuiz(selectedCategory, selectedSubcategory,
+                      widget.isShortAnswerTypeChecked);
+                }
               },
               style: OutlinedButton.styleFrom(
                 foregroundColor: Colors.white,

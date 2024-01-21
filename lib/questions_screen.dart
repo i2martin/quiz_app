@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:quiz_app/data/database_service.dart';
 import 'answer_button.dart';
-import 'package:quiz_app/data/questions.dart';
 import 'dart:async';
 import 'dart:math';
 
 class QuestionsScreen extends StatefulWidget {
-  const QuestionsScreen({super.key, required this.onSelectAnswer});
-
+  QuestionsScreen(
+      {super.key, required this.onSelectAnswer, required this.questions});
+  List<Question> questions;
   final void Function(String answer) onSelectAnswer;
 
   @override
@@ -17,7 +17,7 @@ class QuestionsScreen extends StatefulWidget {
 }
 
 class _QuestionsScreenState extends State<QuestionsScreen> {
-  List<Question>? newQuestions;
+  final textController = TextEditingController();
   var currentQuestionIndex = 0;
   late Timer _timer;
   late double percentage = 1.0;
@@ -36,18 +36,15 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
     super.initState();
   }
 
-  void showQuestions() async {
-    // Retrieve all questions
-    newQuestions = await DatabaseHelper.getQuestionsByCategoryAndSubcategory(
-        "Matematika", "Algebra");
-  }
-
   void startTimer() {
     const oneSecond = Duration(seconds: 1);
     _timer = Timer.periodic(oneSecond, (timer) {
       setState(() {
-        percentage = 1.0 - timer.tick / questionDuration;
-        if (timer.tick >= questionDuration) {
+        percentage = 1.0 -
+            timer.tick /
+                widget.questions[currentQuestionIndex].questionDuration;
+        if (timer.tick >=
+            widget.questions[currentQuestionIndex].questionDuration) {
           timer.cancel();
           answerQuestion("Vrijeme je isteklo.");
         }
@@ -71,7 +68,7 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
 
   @override
   Widget build(context) {
-    final currentQuestion = questions[currentQuestionIndex];
+    final currentQuestion = widget.questions[currentQuestionIndex];
     return SizedBox(
       width: double.infinity,
       child: Container(
@@ -90,24 +87,43 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
                 )),
                 Center(
                   child: Text(
-                    '${questionDuration - _timer.tick} s',
+                    '${widget.questions[currentQuestionIndex].questionDuration - _timer.tick} s',
                     style: const TextStyle(
                         fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                 ),
               ]),
             ),
-            Text(
-              currentQuestion.questionText,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            Builder(builder: (context) {
+              if (!currentQuestion.questionText.contains('\\n')) {
+                currentQuestion.questionText.replaceAll('\\\\', '\\');
+                return Text(
+                  currentQuestion.questionText,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                );
+              } else {
+                return Text(
+                  currentQuestion.questionText
+                      .replaceAll('\\n', '\n')
+                      .replaceAll('\\t', '\t')
+                      .replaceAll('\\\\', '\\'),
+                  textAlign: TextAlign.left,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                );
+              }
+            }),
             const SizedBox(height: 30),
-            ...currentQuestion
+            ...generateAnswers(currentQuestion),
+            /*...currentQuestion
                 .shuffleQuestionAnswers(currentQuestionIndex)
                 .map((item) {
               return AnswerButton(
@@ -116,11 +132,55 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
                   answerQuestion(item);
                 },
               );
-            })
+            }),*/
           ],
         ),
       ),
     );
+  }
+
+  List<Widget> generateAnswers(Question question) {
+    List<Widget> widgetAnswers = [];
+    if (question.questionType == "MC") {
+      List<String> shuffledAnswers =
+          question.shuffleQuestionAnswers(currentQuestionIndex);
+      for (var answer in shuffledAnswers) {
+        widgetAnswers.add(AnswerButton(
+          answerText: answer,
+          onTap: () {
+            answerQuestion(answer);
+          },
+        ));
+      }
+    } else {
+      widgetAnswers.add(
+        TextField(
+          controller: textController,
+          autofocus: true,
+          cursorColor: Colors.white,
+          decoration: const InputDecoration(
+            filled: true,
+            fillColor: Color(0xFF826DF5),
+            focusColor: Color(0xFF826DF5),
+            focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide(
+                color: Color(0xFF826DF5),
+              ),
+            ),
+            //border: OutlineInputBorder(),
+          ),
+        ),
+      );
+      widgetAnswers.add(AnswerButton(
+          answerText: "Spremi",
+          onTap: () {
+            textController.text != ""
+                ? answerQuestion(textController.text)
+                : answerQuestion("Nije odgovoreno.");
+            textController.text = "";
+          }));
+    }
+    return widgetAnswers;
   }
 }
 

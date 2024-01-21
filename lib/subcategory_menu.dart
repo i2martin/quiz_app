@@ -3,7 +3,11 @@ import 'package:quiz_app/data/database_service.dart';
 
 class SubcategoryMenu extends StatelessWidget {
   @override
-  const SubcategoryMenu({super.key, required this.subcategories});
+  const SubcategoryMenu(
+      {super.key,
+      required this.subcategories,
+      required this.updateSubcategory});
+  final Function(String subcategory) updateSubcategory;
 
   final List<Subcategory> subcategories;
 
@@ -23,6 +27,9 @@ class SubcategoryMenu extends StatelessWidget {
           label: const Text("Podkategorija"),
           initialSelection: "",
           width: 250,
+          onSelected: (String? subcategory) {
+            updateSubcategory(subcategory!);
+          },
         ),
       );
     } else {

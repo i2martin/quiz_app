@@ -6,6 +6,7 @@ class AnswerButton extends StatelessWidget {
       {super.key, required this.answerText, required this.onTap});
 
   final String answerText;
+
   final void Function() onTap;
 
   @override
