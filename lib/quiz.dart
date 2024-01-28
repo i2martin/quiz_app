@@ -4,6 +4,7 @@ import 'package:quiz_app/data/database_service.dart';
 import 'package:quiz_app/questions_screen.dart';
 import 'package:quiz_app/results_screen.dart';
 import 'start_screen.dart';
+import 'package:quiz_app/models/data_models.dart';
 
 class Quiz extends StatefulWidget {
   List<Map<String, dynamic>> questions = List.empty();

@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:quiz_app/models/data_models.dart';
 
 class DatabaseHelper {
   static Database? _database;
@@ -63,11 +64,6 @@ class DatabaseHelper {
       whereArgs: [subcategoryName],
     );
 
-    if (categoryResult.isEmpty || subcategoryResult.isEmpty) {
-      // Handle the case where the category or subcategory doesn't exist
-      return [];
-    }
-
     int categoryId = categoryResult.first['categoryId'];
     int subcategoryId = subcategoryResult.first['subcategoryId'];
 
@@ -100,7 +96,7 @@ class DatabaseHelper {
   static Future<Database> initDatabase() async {
     // Get the path to the database on the device
     String databasesPath = await getDatabasesPath();
-    String path = join(databasesPath, 'questions_database_test.db');
+    String path = join(databasesPath, 'questions_db_test.db');
 
     // Check if the database exists
     bool exists = await databaseExists(path);
@@ -108,7 +104,7 @@ class DatabaseHelper {
     if (!exists) {
       // If it doesn't exist, copy the database from the assets
       ByteData data = await rootBundle
-          .load(join('assets', 'data', 'test', 'questions_database_test.db'));
+          .load(join('assets', 'data', 'test', 'questions_db_test.db'));
       List<int> bytes = data.buffer.asUint8List();
       await File(path).writeAsBytes(bytes);
     }
@@ -118,98 +114,6 @@ class DatabaseHelper {
       path,
       version: 1,
       singleInstance: true,
-    );
-  }
-}
-
-class Question {
-  int questionId;
-  String questionText;
-  String questionAnswers;
-  String correctAnswer;
-  String questionType;
-  int questionDuration;
-  int categoryId;
-  int subcategoryId;
-
-  Question({
-    required this.questionId,
-    required this.questionText,
-    required this.questionAnswers,
-    required this.correctAnswer,
-    required this.questionType,
-    required this.questionDuration,
-    required this.categoryId,
-    required this.subcategoryId,
-  });
-
-  factory Question.fromMap(Map<String, dynamic> map) {
-    return Question(
-      questionId: map['questionId'],
-      questionText: map['questionText'],
-      questionAnswers: map['questionAnswers'],
-      correctAnswer: map['correctAnswer'],
-      questionType: map['questionType'],
-      questionDuration: map['questionDuration'],
-      categoryId: map['categoryId'],
-      subcategoryId: map['subcategoryId'],
-    );
-  }
-
-  List<String> _alreadyShuffledAnswers = List.empty();
-  int _cQuestionIndex = -1;
-
-  List<String> shuffleQuestionAnswers(int questionIndex) {
-    if (_cQuestionIndex != questionIndex) {
-      //question has changed --> needs to shuffle
-      final List<String> shuffledList = [];
-      List<String> answers = questionAnswers.split(',');
-      for (int i = 0; i < answers.length; i++) {
-        shuffledList.add(answers[i]);
-      }
-      shuffledList.shuffle();
-      _alreadyShuffledAnswers = shuffledList;
-      _cQuestionIndex = questionIndex;
-      return shuffledList;
-    } else {
-      return _alreadyShuffledAnswers;
-    }
-  }
-}
-
-class Category {
-  int categoryId;
-  String category;
-
-  Category({
-    required this.categoryId,
-    required this.category,
-  });
-
-  factory Category.fromMap(Map<String, dynamic> map) {
-    return Category(
-      categoryId: map['categoryId'],
-      category: map['category'],
-    );
-  }
-}
-
-class Subcategory {
-  int subcategoryId;
-  int categoryId;
-  String subcategory;
-
-  Subcategory({
-    required this.subcategoryId,
-    required this.categoryId,
-    required this.subcategory,
-  });
-
-  factory Subcategory.fromMap(Map<String, dynamic> map) {
-    return Subcategory(
-      subcategoryId: map['subcategoryId'],
-      categoryId: map['categoryId'],
-      subcategory: map['subcategory'],
     );
   }
 }

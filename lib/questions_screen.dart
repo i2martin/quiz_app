@@ -1,5 +1,7 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
-import 'package:quiz_app/data/database_service.dart';
+import 'package:quiz_app/models/data_models.dart';
 import 'answer_button.dart';
 import 'dart:async';
 import 'dart:math';
@@ -96,9 +98,8 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
             ),
             Builder(builder: (context) {
               if (!currentQuestion.questionText.contains('\\n')) {
-                currentQuestion.questionText.replaceAll('\\\\', '\\');
                 return Text(
-                  currentQuestion.questionText,
+                  currentQuestion.questionText.replaceAll('\\\\', ''),
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: Colors.white,
@@ -111,7 +112,7 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
                   currentQuestion.questionText
                       .replaceAll('\\n', '\n')
                       .replaceAll('\\t', '\t')
-                      .replaceAll('\\\\', '\\'),
+                      .replaceAll('\\\\', ''),
                   textAlign: TextAlign.left,
                   style: const TextStyle(
                     color: Colors.white,
@@ -121,8 +122,28 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
                 );
               }
             }),
+            Builder(builder: (context) {
+              print(currentQuestion.questionImage);
+              if (currentQuestion.questionImage.isNotEmpty) {
+                return Image(
+                  image: Image.memory(currentQuestion.questionImage).image,
+                  height: 100,
+                );
+              } else {
+                return const SizedBox(
+                  height: 1,
+                );
+              }
+            }),
             const SizedBox(height: 30),
-            ...generateAnswers(currentQuestion),
+            ...generateAnswers(currentQuestion).expand(
+              (cq) => [
+                cq,
+                const Padding(
+                  padding: EdgeInsets.all(3),
+                )
+              ].toList(),
+            ),
             /*...currentQuestion
                 .shuffleQuestionAnswers(currentQuestionIndex)
                 .map((item) {
