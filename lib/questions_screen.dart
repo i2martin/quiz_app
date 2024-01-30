@@ -1,15 +1,13 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:quiz_app/models/data_models.dart';
 import 'answer_button.dart';
 import 'dart:async';
-import 'dart:math';
+import 'custom_painter.dart';
 
 class QuestionsScreen extends StatefulWidget {
-  QuestionsScreen(
+  const QuestionsScreen(
       {super.key, required this.onSelectAnswer, required this.questions});
-  List<Question> questions;
+  final List<Question> questions;
   final void Function(String answer) onSelectAnswer;
 
   @override
@@ -123,7 +121,6 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
               }
             }),
             Builder(builder: (context) {
-              print(currentQuestion.questionImage);
               if (currentQuestion.questionImage.isNotEmpty) {
                 return Image(
                   image: Image.memory(currentQuestion.questionImage).image,
@@ -144,16 +141,6 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
                 )
               ].toList(),
             ),
-            /*...currentQuestion
-                .shuffleQuestionAnswers(currentQuestionIndex)
-                .map((item) {
-              return AnswerButton(
-                answerText: item,
-                onTap: () {
-                  answerQuestion(item);
-                },
-              );
-            }),*/
           ],
         ),
       ),
@@ -188,7 +175,6 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
                 color: Color(0xFF826DF5),
               ),
             ),
-            //border: OutlineInputBorder(),
           ),
         ),
       );
@@ -202,45 +188,5 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
           }));
     }
     return widgetAnswers;
-  }
-}
-
-class TimerPainter extends CustomPainter {
-  final double percentage;
-
-  TimerPainter({required this.percentage});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color.fromARGB(0, 193, 193, 193)
-      ..strokeCap = StrokeCap.round
-      ..strokeWidth = 6.0
-      ..style = PaintingStyle.stroke;
-
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = min(size.width / 4, size.height / 4);
-
-    canvas.drawCircle(center, radius, paint);
-
-    final progressPaint = Paint()
-      ..color = const Color(0xFF826DF5)
-      ..strokeCap = StrokeCap.round
-      ..strokeWidth = 6.0
-      ..style = PaintingStyle.stroke;
-
-    final sweepAngle = 2 * pi * percentage;
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      -pi / 2,
-      sweepAngle,
-      false,
-      progressPaint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) {
-    return true;
   }
 }

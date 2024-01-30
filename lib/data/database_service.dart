@@ -51,38 +51,29 @@ class DatabaseHelper {
   ) async {
     final Database db = await database;
 
-    // Fetch the category and subcategory IDs based on names
-    List<Map<String, dynamic>> categoryResult = await db.query(
-      'Categories',
-      where: 'category = ?',
-      whereArgs: [categoryName],
-    );
-
-    List<Map<String, dynamic>> subcategoryResult = await db.query(
-      'Subcategories',
-      where: 'subcategory = ?',
-      whereArgs: [subcategoryName],
-    );
-
-    int categoryId = categoryResult.first['categoryId'];
-    int subcategoryId = subcategoryResult.first['subcategoryId'];
-
     // Retrieve questions based on the fetched category and subcategory IDs
     List<Map<String, dynamic>> queryResults;
     if (isShortAnswerTypeChecked == true) {
-      queryResults = await db.query(
-        'Questions',
-        where: 'categoryId = ? AND subcategoryId = ?',
-        whereArgs: [categoryId, subcategoryId],
-      );
+      queryResults = await db.rawQuery('''
+  SELECT Questions.*
+  FROM Questions
+  INNER JOIN Subcategories ON Questions.subcategoryId = Subcategories.subcategoryId
+  INNER JOIN Categories ON Subcategories.categoryId = Categories.categoryId
+  WHERE Categories.category = ? AND Subcategories.subcategory = ?''', [
+        categoryName,
+        subcategoryName,
+      ]);
     } else {
       String questionType = "MC";
-      queryResults = await db.query(
-        'Questions',
-        where: 'categoryId = ? AND subcategoryId = ? AND questionType=?',
-        whereArgs: [categoryId, subcategoryId, questionType],
-      );
+      queryResults = await db.rawQuery('''
+  SELECT Questions.*
+  FROM Questions
+  INNER JOIN Subcategories ON Questions.subcategoryId = Subcategories.subcategoryId
+  INNER JOIN Categories ON Subcategories.categoryId = Categories.categoryId
+  WHERE Categories.category = ? AND Subcategories.subcategory = ? AND Questions.questionType = ?
+''', [categoryName, subcategoryName, questionType]);
     }
+
     // Map results to instances of the Question class
     List<Question> questions =
         queryResults.map((map) => Question.fromMap(map)).toList();

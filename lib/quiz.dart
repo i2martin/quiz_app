@@ -7,10 +7,7 @@ import 'start_screen.dart';
 import 'package:quiz_app/models/data_models.dart';
 
 class Quiz extends StatefulWidget {
-  List<Map<String, dynamic>> questions = List.empty();
-  int numberOfQuestions = 10; // Set the desired number of questions
-  String category = 'Matematika'; // Set the desired category
-  String subcategory = 'Algebra'; // Set the desired subcategory
+  final List<Map<String, dynamic>> questions = List.empty();
 
   Quiz({super.key});
 

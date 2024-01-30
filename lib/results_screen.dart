@@ -4,14 +4,14 @@ import 'package:quiz_app/questions_summary.dart';
 
 class ResultsScreen extends StatelessWidget {
   @override
-  ResultsScreen(
+  const ResultsScreen(
       {super.key,
       required this.chosenAnswers,
       required this.restartQuiz,
       required this.questions});
 
   final List<String> chosenAnswers;
-  List<Question> questions;
+  final List<Question> questions;
   final void Function() restartQuiz;
   List<Map<String, Object>> getSummaryData() {
     final List<Map<String, Object>> summary = [];

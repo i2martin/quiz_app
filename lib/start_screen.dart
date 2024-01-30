@@ -3,6 +3,7 @@ import 'package:quiz_app/data/database_service.dart';
 import 'package:quiz_app/subcategory_menu.dart';
 import 'package:quiz_app/models/data_models.dart';
 
+// ignore: must_be_immutable
 class StartScreen extends StatefulWidget {
   StartScreen(this.startQuiz, {super.key});
   List<Subcategory> subcategories = [];
